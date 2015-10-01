@@ -3,8 +3,21 @@
 <head>
   <title>Twittexplorer</title>
   <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
+  <%= javascript_include_tag "//maps.google.com/maps/api/js?v=3.13&sensor=false&libraries=geometry" %>
+  <%= javascript_include_tag "//google-maps-utility-library-v3.googlecode.com/svn/tags/markerclustererplus/2.0.14/src/markerclusterer_packed.js" %>
   <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
+  <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
   <%= csrf_meta_tags %>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script>
+    $(function() {
+     $('.datepicker').datepicker({
+       dateFormat: 'yy-mm-dd'
+     });
+    });
+  </script>
 </head>
 <body>
 

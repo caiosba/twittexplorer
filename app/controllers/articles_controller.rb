@@ -4,12 +4,12 @@ class ArticlesController < ApplicationController
   # GET /articles
   # GET /articles.json
   def index
-    @articles = Article.all
+    @articles = Article.search(params).records
   end
 
   # GET /articles/search
   def search
-    @articles = Article.search(params[:q]).records
+    @articles = Article.search(params).records
 
     render action: "index"
   end
@@ -77,6 +77,6 @@ class ArticlesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def article_params
-      params.require(:article).permit(:title, :content, :published_on)
+      params.require(:article).permit(:title, :content, :published_on, :lat, :lon, :lang)
     end
 end

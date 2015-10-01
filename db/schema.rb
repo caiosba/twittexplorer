@@ -11,14 +11,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150924143820) do
+ActiveRecord::Schema.define(version: 20151001041423) do
 
   create_table "articles", force: true do |t|
     t.string   "title"
     t.text     "content"
-    t.date     "published_on"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.float    "lat"
+    t.float    "lon"
+    t.string   "lang"
+    t.string   "uuid"
+    t.string   "user"
+    t.integer  "published_on"
+    t.boolean  "is_private"
+    t.boolean  "is_removed"
+    t.boolean  "has_photo"
+    t.boolean  "has_instagram"
   end
 
 end

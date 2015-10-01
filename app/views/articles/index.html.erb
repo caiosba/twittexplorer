@@ -1,24 +1,47 @@
-<h1>Listing articles</h1>
+<h1>Tweets</h1>
 
-  <hr>
+  <p>If you want to search by language, type <em>lang:<language code></em> in the <em>query</em> field below. Any other keyword will match the tweet content. You can also search by location, by using the latitude/longitude field below or by selecting a point on the map. You can also provide a distance from that point, and so only tweets in that radius will be returned.</p>
 
   <%= form_tag search_articles_path, method: 'get' do %>
-    <%= label_tag :query %>
-    <%= text_field_tag :q, params[:q] %>
-    <%= submit_tag :search %>
+    <%= label_tag :query %><br />
+    <%= text_field_tag :q, params[:q], style: 'width: 100%' %>
+
+
+    <div id="map" style="width: 100%; height: 350px;"></div>
+
+    <p style="text-align: center;">
+      <%= text_field_tag :lat, params[:lat], id: 'lat', style: 'width: 30%', placeholder: 'Latitude' %>
+      <%= text_field_tag :lon, params[:lon], id: 'lon', style: 'width: 30%', placeholder: 'Longitude' %>
+      <%= text_field_tag :distance, params[:distance], style: 'width: 30%', placeholder: 'Distance' %>
+    </p>
+
+    <p style="text-align: center;">
+      <%= text_field_tag :from, params[:from], id: 'from', style: 'width: 45%', placeholder: 'From date', class: 'datepicker' %>
+      <%= text_field_tag :to, params[:to], id: 'to', style: 'width: 45%', placeholder: 'To date', class: 'datepicker' %>
+    </p>
+
+    <p style="text-align: center;">
+      <%= check_box_tag :is_private, '1', params[:is_private] == '1' %> Private?
+      <%= check_box_tag :is_removed, '1', params[:is_removed] == '1'%> Removed?
+      <%= check_box_tag :has_photo, '1', params[:has_photo] == '1'%> Has photo?
+      <%= check_box_tag :has_instagram, '1', params[:has_instagram] == '1'%> Has Instagram?
+    </p>
+
+    <p style="text-align: center;">
+      <%= submit_tag :search, style: 'width: 6%' %>
+    </p>
   <% end %>
 
-  <hr>
-
-
-<table>
+<table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid #333;">
   <thead>
     <tr>
-      <th>Title</th>
+      <th>Id</th>
+      <th>User</th>
       <th>Content</th>
-      <th>Published on</th>
-      <th></th>
-      <th></th>
+      <th>Language</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Date</th>
       <th></th>
     </tr>
   </thead>
@@ -26,18 +49,97 @@
   <tbody>
     <% @articles.each do |article| %>
       <tr>
-        <td><%= article.title %></td>
+        <td><%= link_to article.uuid, "https://twitter.com/statuses/#{article.uuid}", target: '_blank' %></td>
+        <td><%= article.user %></td>
         <td><%= article.content %></td>
-        <td><%= article.published_on %></td>
-        <td><%= link_to 'Show', article %></td>
-        <td><%= link_to 'Edit', edit_article_path(article) %></td>
-        <td><%= link_to 'Destroy', article, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= article.lang.to_s.gsub(/^lang:/, '') %></td>
+        <td><%= article.lat %></td>
+        <td><%= article.lon %></td>
+        <td><%= Time.at(article.published_on) %></td>
+        <td><span style="cursor: pointer" onclick="gmap_form({ lat: <%= article.lat %>, lon: <%= article.lon %>, lang: '<%= article.lang %>', content: '<%= article.content.gsub("'", "") %>', uuid: '<%= article.uuid %>', published_on: '<%= article.published_on %>', user: '<%= article.user %>' })">Show on the Map</span></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
+<p><%= link_to 'More', params.merge(page: params[:page].to_i + 1) %></p>
 <br>
 
-<%= link_to 'New Article', new_article_path %>  <%= link_to 'All Articles', articles_path if params[:q] %>
+<script>
+  function gmap_form(point) {
+    handler = Gmaps.build('Google');
+    var lat;
+    var lon;
+    handler.buildMap({ provider: {}, internal: {id: 'map'}}, function() {
+      if (point && point.lat && point.lon) {
+        lat = point.lat;
+        lon = point.lon;
 
+        var embed = '<blockquote class="twitter-tweet">' + point.content + ' <a href="https://twitter.com/' + point.user + '/status/' + point.uuid + '">' + point.published_on + '</a></blockquote><p style="text-align: center;" id="loading-tweet"><em>Loading tweet...</em></p>';
+
+        markers = handler.addMarkers([
+          {
+            "lat": point.lat,
+            "lng": point.lon,
+            "infowindow": embed
+          }
+        ]);
+        handler.bounds.extendWith(markers);
+        handler.fitMapToBounds();
+        handler.getMap().setZoom(12);
+        document.getElementById("lat").value = point.lat;
+        document.getElementById("lon").value = point.lon;
+        _.each(markers, function(marker){
+          google.maps.event.addListener(marker.getServiceObject(), 'click', function() {
+            setTimeout(function() {
+              twttr.widgets.load(); 
+              document.getElementById('loading-tweet').style.display = 'none';
+            }, 3000);
+          });
+        });
+      }
+      else {
+        handler.fitMapToBounds();
+        lat = parseFloat(document.getElementById('lat').value);
+        lon = parseFloat(document.getElementById('lon').value);
+        if (!lat || !lon) {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+              lat = position.coords.latitude;
+              lon = position.coords.longitude;
+              handler.map.centerOn([lat, lon]);
+              handler.getMap().setZoom(6);
+            });
+          }
+        }
+        else {
+          document.getElementById("lat").value = lat;
+          document.getElementById("lon").value = lon;
+          handler.map.centerOn([lat, lon]);
+          handler.getMap().setZoom(6);
+        }
+      }
+    });
+
+    var markerOnMap;
+
+    function placeMarker(location) {
+      if (markerOnMap) {
+        markerOnMap.setPosition(location);
+      }
+      else {
+        markerOnMap = new google.maps.Marker({
+          position: location,
+          map: handler.getMap()
+        });
+      }
+    }
+
+    google.maps.event.addListener(handler.getMap(), 'click', function(event) {
+      placeMarker(event.latLng);
+      document.getElementById("lat").value = event.latLng.lat();
+      document.getElementById("lon").value = event.latLng.lng();
+    });
+  }
+
+  gmap_form(null);
+</script>

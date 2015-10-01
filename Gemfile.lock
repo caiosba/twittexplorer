@@ -63,6 +63,7 @@ GEM
     execjs (2.6.0)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
+    gmaps4rails (2.1.2)
     hashie (3.4.2)
     i18n (0.7.0)
     jbuilder (1.5.3)
@@ -139,6 +140,7 @@ DEPENDENCIES
   elasticsearch!
   elasticsearch-model!
   elasticsearch-rails!
+  gmaps4rails
   jbuilder (~> 1.2)
   jquery-rails
   mocha
