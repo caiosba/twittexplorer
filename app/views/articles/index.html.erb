@@ -16,8 +16,9 @@
     </p>
 
     <p style="text-align: center;">
-      <%= text_field_tag :from, params[:from], id: 'from', style: 'width: 45%', placeholder: 'From date', class: 'datepicker' %>
-      <%= text_field_tag :to, params[:to], id: 'to', style: 'width: 45%', placeholder: 'To date', class: 'datepicker' %>
+      <%= text_field_tag :from, params[:from], id: 'from', style: 'width: 30%', placeholder: 'From date', class: 'datepicker' %>
+      <%= text_field_tag :to, params[:to], id: 'to', style: 'width: 30%', placeholder: 'To date', class: 'datepicker' %>
+      <%= select_tag :project, options_for_select(Article.group(:project).map(&:project), params[:project]), id: 'project', style: 'width: 30%', prompt: 'Select a project' %>
     </p>
 
     <p style="text-align: center;">
@@ -43,13 +44,14 @@
       <th>Longitude</th>
       <th>Date</th>
       <th></th>
+      <th></th>
     </tr>
   </thead>
 
   <tbody>
     <% @articles.each do |article| %>
       <tr>
-        <td><%= link_to article.uuid, "https://twitter.com/statuses/#{article.uuid}", target: '_blank' %></td>
+        <td><%= link_to article.uuid, article.url, target: '_blank' %></td>
         <td><%= article.user %></td>
         <td><%= article.content %></td>
         <td><%= article.lang.to_s.gsub(/^lang:/, '') %></td>
@@ -57,11 +59,13 @@
         <td><%= article.lon %></td>
         <td><%= Time.at(article.published_on) %></td>
         <td><span style="cursor: pointer" onclick="gmap_form({ lat: <%= article.lat %>, lon: <%= article.lon %>, lang: '<%= article.lang %>', content: '<%= article.content.gsub("'", "") %>', uuid: '<%= article.uuid %>', published_on: '<%= article.published_on %>', user: '<%= article.user %>' })">Show on the Map</span></td>
+        <td><%= link_to('Translate', translate_article_path(article)) %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-<p><%= link_to 'More', params.merge(page: params[:page].to_i + 1) %></p>
+<p style="text-align: center;"><%= link_to 'Load More', params.merge(page: params[:page].to_i + 1) %></p>
+<p style="text-align: center;"><%= link_to 'See Spreadsheet', 'https://docs.google.com/spreadsheets/d/' + CONFIG['google_id'], target: '_blank' %></p>
 <br>
 
 <script>

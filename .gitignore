@@ -15,3 +15,4 @@
 /log/*.log
 /tmp
 vendor/elasticsearch-1.0.1/
+*.sw*

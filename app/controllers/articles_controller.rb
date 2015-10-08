@@ -5,15 +5,26 @@ class ArticlesController < ApplicationController
   # GET /articles.json
   def index
     @articles = Article.search(params).records
+    @message = ''
   end
 
   # GET /articles/search
   def search
     @articles = Article.search(params).records
-
+    @message = ''
     render action: "index"
   end
 
+  def translate
+    a = Article.find(params[:id])
+    if a.added_to_spreadsheet?
+      @message = 'Already added to the spreadsheet'
+    else
+      a.translate
+      @message = 'Added to the spreadsheet'
+    end
+    render text: "<p>#{@message}</p><p>&laquo; <a href=\"javascript:history.back(-1)\">Back</a></p><p><a href=\"https://docs.google.com/spreadsheets/d/#{CONFIG['google_id']}\" target=\"_blank\">See Spreadsheet</a></p>"
+  end
 
   # GET /articles/1
   # GET /articles/1.json
@@ -70,13 +81,14 @@ class ArticlesController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_article
-      @article = Article.find(params[:id])
-    end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def article_params
-      params.require(:article).permit(:title, :content, :published_on, :lat, :lon, :lang)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_article
+    @article = Article.find(params[:id])
+  end
+
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def article_params
+    params.require(:article).permit(:title, :content, :published_on, :lat, :lon, :lang)
+  end
 end

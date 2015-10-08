@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151001041423) do
+ActiveRecord::Schema.define(version: 20151007145554) do
 
   create_table "articles", force: true do |t|
     t.string   "title"
@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20151001041423) do
     t.boolean  "is_removed"
     t.boolean  "has_photo"
     t.boolean  "has_instagram"
+    t.string   "project"
   end
 
 end
